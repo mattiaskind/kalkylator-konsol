@@ -9,16 +9,21 @@ namespace Calculator2
      * dess att användaren väljer att avsluta. Jag har skapat en klass som genom sina egenskaper representerar 
      * en uträkning. Jag sparar sedan varje uträkning i en lista så att historik kan visas.
      * Jag har också skapat en statisk klass med metoder för uträkningarna och en del separata metoder
-     * för att undvika duplciering av kod.     
+     * för att undvika skriva samma kod på flera ställen.
+     * 
+     * Allt ligger i den här filen för att det ska vara enkelt att lämna in men så vitt jag förstår
+     * är det att föredra att respektive klass ligger i en egen fil. Här har jag alltså allt i samma fil för
+     * att det ska vara enkelt - dessutom är programmet så pass simpelt.
      * */
     class Program
     {
         static void Main(string[] args)
-        {            
-            /* 
+        {
+            /* *************************************************************************
              * Jag sparar alla uträkningar i en lista av objekt som sedan kan användas för att
-             * visa historiken
-             */
+             * visa historiken. Jag har funderat på olika alternativ men behöver något som kan öka
+             * i storlek under tiden programmet körs varför en lista passar bra.             
+             * ************************************************************************* */
             List<MathOperation> operations = new List<MathOperation>();
             string input;
             
@@ -33,13 +38,15 @@ namespace Calculator2
                     firstIteration = false;
                 }
 
-                // Om det finns tidigare uträkningar, visa dem
+                // Om det finns tidigare uträkningar ska dessa visas
                 // Andra argumentet anger hur mycket av historiken som ska visas.
                 // För att visa hela historiken anges all, för endast summeringar: results
                 if (operations.Count > 0) HandleIO.DisplayOperations(operations, "all");
                 
                 // Varje uträkning sparar som ett objekt
                 // Initiera ett nytt objekt för uträkning
+                // Här skulle jag kunna spara varje del av en uträkning i variabler som sedan
+                // läggs 
                 MathOperation operation = new MathOperation();
 
                 // Visa prompt och inmatning för första termen eller motsvarande
@@ -165,9 +172,7 @@ namespace Calculator2
                 }
             }Console.WriteLine("-----------------------------------------------------");
             Console.ForegroundColor = ConsoleColor.White;
-        }
-
-        
+        }        
     }
 
     /* *************************************************************************
@@ -178,10 +183,15 @@ namespace Calculator2
      * **************************************************************************/
     public class MathOperation
     {
-        public double Number1 { get; set; }
-        public double Number2 { get; set; }
-        public string MathOperator { get; set; }
-        public double Result { get; set; }
+        private double _number1;
+        private double _number2;
+        private string _mathOperator;
+        private double _result;
+
+        public double Number1 { get { return _number1; } set { _number1 = value; } }
+        public double Number2 { get { return _number2; } set { _number2 = value; } }
+        public string MathOperator { get { return _mathOperator; } set { _mathOperator = value; } }
+        public double Result { get { return _result; } set { _result = value; } }
     }
 
     // En statisk klass med metoder som genomför uträkningar
