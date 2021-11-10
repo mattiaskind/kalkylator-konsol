@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace Calculator2
 {
-    /* *
+    /* *********************************************************************
      * Programmet bygger på en while loop som frågar efter inmatning och gör uträkningar till
      * dess att användaren väljer att avsluta. Jag har skapat en klass som genom sina egenskaper representerar 
      * en uträkning. Jag sparar sedan varje uträkning i en lista så att historik kan visas.
@@ -12,9 +12,10 @@ namespace Calculator2
      * för att undvika skriva samma kod på flera ställen.
      * 
      * Allt ligger i den här filen för att det ska vara enkelt att lämna in men så vitt jag förstår
-     * är det att föredra att respektive klass ligger i en egen fil. Här har jag alltså allt i samma fil för
+     * är det att föredra om respektive klass ligger i en egen fil. Här har jag alltså allt i samma fil för
      * att det ska vara enkelt - dessutom är programmet så pass simpelt.
-     * */
+     * ********************************************************************* */
+
     class Program
     {
         static void Main(string[] args)
@@ -42,11 +43,13 @@ namespace Calculator2
                 // Andra argumentet anger hur mycket av historiken som ska visas.
                 // För att visa hela historiken anges all, för endast summeringar: results
                 if (operations.Count > 0) HandleIO.DisplayOperations(operations, "all");
-                
-                // Varje uträkning sparar som ett objekt
-                // Initiera ett nytt objekt för uträkning
-                // Här skulle jag kunna spara varje del av en uträkning i variabler som sedan
-                // läggs 
+
+                // Varje uträkning sparar som ett objekt                
+                // Jag skulle kunna spara termerna, operatorn och summan i variabler för att sedan
+                // lagra på lämpligt sätt men jag har valt utgå från klassen och skapa ett nytt objekt
+                // vid varje iteration. Fördelen är att det är enkelt att hantera, jag vet var jag 
+                // har alla komponenter av uträkningen. Jag kommer ändå att behöva spara dessa i ett objekt
+                // när jag ska lagra uträkningen i en lista                              
                 MathOperation operation = new MathOperation();
 
                 // Visa prompt och inmatning för första termen eller motsvarande
@@ -79,7 +82,7 @@ namespace Calculator2
     // En klass med statiska metoder för input och output
     public static class HandleIO
     {
-        // Metoden kontrollerar att användaren skriver in ett nummer och sedan returnera det
+        // Metoden kontrollerar att användaren skriver in ett nummer för att sedan returnera det
         public static double GetNumber(string input)
         {
             // Kontrollera om inmatningen innebär att användaren vill avsluta programmet?
@@ -105,7 +108,7 @@ namespace Calculator2
             CheckExitProgram(input, true);
             // Giltiga operatorer
             string[] validOperators = { "+", "-", "/", "*" };            
-            // Kontrollera om inmatningen från användaren stämmer med någon giltig operator
+            // Kontrollera om inmatningen från användaren stämmer med en giltig operator
             while (!validOperators.Contains(input))
             {
                 Console.ForegroundColor = ConsoleColor.Red;
@@ -113,6 +116,7 @@ namespace Calculator2
                 Console.ForegroundColor = ConsoleColor.White;
                 Console.Write(": ");
                 input = Console.ReadLine().Trim();
+                // Kontrollera om användaren vill avsluta programmet
                 CheckExitProgram(input, true);
             }
             return input;
@@ -121,7 +125,7 @@ namespace Calculator2
         // Metod för att kontrollera om användaren vill avsluta programmet
         // Den första paremetern är inmatningen från användaren
         // Den andra parametern avgör om det går att avsluta programmet genom att mata in ett namn i stället
-        public static void CheckExitProgram(string input, bool exitByName = false)
+        private static void CheckExitProgram(string input, bool exitByName = false)
         {
             // Giltiga parametrar för att avsluta programmet
             string[] exitParams = { "q", "quit" };
@@ -178,20 +182,15 @@ namespace Calculator2
     /* *************************************************************************
      * Jag har valt att skapa en klass för att lagra alla delar av en uträkning
      * Jag har sneglat lite på struct, tuples och dictionary men tycker att en klass löser
-     * problemet på ett enkelt sätt eftersom en uträkning består av olika datatyper där
-     * operatorn är en string/char
+     * problemet på ett enkelt sätt eftersom det håller ihop de delar som hör samman och 
+     * gör det möjligt att lagra de olika datatyperna double/string i ett och samma objekt
      * **************************************************************************/
     public class MathOperation
-    {
-        private double _number1;
-        private double _number2;
-        private string _mathOperator;
-        private double _result;
-
-        public double Number1 { get { return _number1; } set { _number1 = value; } }
-        public double Number2 { get { return _number2; } set { _number2 = value; } }
-        public string MathOperator { get { return _mathOperator; } set { _mathOperator = value; } }
-        public double Result { get { return _result; } set { _result = value; } }
+    {        
+        public double Number1 { get; set; }
+        public double Number2 { get; set; }
+        public string MathOperator { get; set; }
+        public double Result { get; set; }
     }
 
     // En statisk klass med metoder som genomför uträkningar
@@ -219,7 +218,7 @@ namespace Calculator2
                     result = Multiply(number1, number2);
                     break;
             }
-            return result;
+            return Math.Round(result, 10);
         }
         // En metod för respektive uträkning
         private static double Add(double number1, double number2)
