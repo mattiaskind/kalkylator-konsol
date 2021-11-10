@@ -105,7 +105,7 @@ namespace Calculator2
         public static string GetOperator(string input)
         {
             // Kontrollera om inputen innebär att användaren vill avsluta programmet?
-            CheckExitProgram(input, true);
+            CheckExitProgram(input, exitByName: true);
             // Giltiga operatorer
             string[] validOperators = { "+", "-", "/", "*" };            
             // Kontrollera om inmatningen från användaren stämmer med en giltig operator
@@ -117,7 +117,7 @@ namespace Calculator2
                 Console.Write(": ");
                 input = Console.ReadLine().Trim();
                 // Kontrollera om användaren vill avsluta programmet
-                CheckExitProgram(input, true);
+                CheckExitProgram(input, exitByName: true);
             }
             return input;
         }
