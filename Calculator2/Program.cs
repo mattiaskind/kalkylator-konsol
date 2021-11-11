@@ -139,7 +139,7 @@ namespace Calculator2
         // i en så pass simpel applikation.
         public static string GetOperator(string input)
         {
-            // Kontrollera om inputen innebär att användaren vill avsluta programmet?
+            // Kontrollera om inputen innebär att användaren vill avsluta programmet
             CheckIfExitProgram(input, exitByName: true);
             // Giltiga operatorer
             string[] validOperators = { "+", "-", "/", "*" };            
@@ -164,6 +164,7 @@ namespace Calculator2
         {
             // Giltiga parametrar för att avsluta programmet
             string[] exitParams = { "q", "quit" };
+            // Det ska gå att avsluta genom att byta ut operatorn mot MARCUS
             const string ExitName = "MARCUS";
 
             if (exitParams.Contains(input))
@@ -201,7 +202,7 @@ namespace Calculator2
         {
             Console.ForegroundColor = ConsoleColor.Blue;
             Console.WriteLine("Tidigare uträkningar: ");
-            // Här går det att använda en foreach-loop också (eller på något annat sätt också såkalrt).
+            // Här går det att använda en foreach-loop också (eller något annat för den delen)
             // Generellt tycker jag att läsbarheten är högre med foreach men eftersom
             // vi pratat mycket om for-loopar i kursen har jag utgått från en sådan här.
             for (int i = 0; i < operations.Count; i++)
@@ -214,7 +215,7 @@ namespace Calculator2
                 }
                 else
                 {
-                    // ... annars visas uträkningn
+                    // ... annars visas uträkningen
                     // Parametern view avgör hur mycket information som ska visas                 
                     if(view =="all") Console.WriteLine($" {operations[i].Number1} {operations[i].MathOperator} {operations[i].Number2} = {operations[i].Result}");
                     if(view =="results") Console.WriteLine($" {operations[i].Result}");
@@ -239,8 +240,7 @@ namespace Calculator2
     * lagra resultatet. Det räknas ut i samband med att termer och operator matas in
     * men skulle också kunna räknas ut och visas i samband med att jag skriver ut historiken. 
     * Jag har dock valt att spara alla delar så här vilket gör det möjligt att, när som helst, 
-    * ha tillgång till resultatet av en uträkning utan att behöva utföra den varje gång
-    * man behöver ha åtkomst till resultatet.
+    * ha tillgång till resultatet av en uträkning utan att behöva utföra den flera gånger.
     *****************************************************************/    
     public class MathOperation
     {        
@@ -253,7 +253,7 @@ namespace Calculator2
     /******************************************************************
     * En statisk klass med metoder som genomför uträkningar
     * Jag har valt att skapa en separat klass för att utföra uträkningarna. Dessa metoder skulle
-    * kunna ingå i klassen MathOperation men jag har valt att ha dem separat istället
+    * kunna ingå i klassen MathOperation men jag har valt att lägga dem separat.
     * Jag hanterar bara en uträkning i taget och därför passar det bra att ha dessa metoder statiska. 
     * Det gör också att klassen kan återanvändas lättare i andra sammanhang. Den är inte bunden till 
     * de specifika egenskaperna som hör till en uträkning i just det här programmet.
