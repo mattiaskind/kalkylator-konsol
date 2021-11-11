@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 
 namespace Calculator2
 {
@@ -10,7 +11,7 @@ namespace Calculator2
      * en uträkning. Jag sparar sedan varje uträkning i en lista så att historik kan visas.
      * Jag har också skapat en statisk klass med metoder för uträkningarna och en klass som hanterar inmatning
      * och utmatning. Jag har försökt utfgå från DRY-principen så gott jag kunnat för att undvika 
-     * att skriva samma kod flera gånger.
+     * att skriva samma kod flera gånger. Det gör det enklare om något behöver ändras.
      * 
      * Allt ligger i den här filen, även de separata klasserna. Jag är medveten om att varje klass egentligen bör ligga
      * i en egen fil men jag har allt i samma för att det ska vara enkelt att lämna in.
@@ -23,15 +24,15 @@ namespace Calculator2
             /* *************************************************************************
              * Jag sparar alla uträkningar i en lista med objekt som sedan kan användas för att
              * visa historiken. Eftersom antalet uträkningar beror på användaren och inte är bestämt på förhand
-             * har jag valt att använda en lista. Jag har funderat på andra alternativ för att spara uträkningarna. 
-             * Jag skulle exempelvis kunna använda array och förstora men en lista lämpar sig väl för ändamålet.             
+             * har jag valt att använda en lista. Jag har funderat på andra alternativ för att spara uträkningarna, 
+             * exempelvis array och förstora men en lista lämpar sig väl för ändamålet.             
              * ************************************************************************* */            
             List<MathOperation> operations = new List<MathOperation>();
             string input;
             
             bool firstIteration = true;
-            // Den här loopen kommer att köras så länge användaren inte väljer att avsluta.
-            // Logik för att avsluta programmet finns inuti loopen.
+            // Den här loopen kommer att köras så länge användaren inte väljer att avsluta programmet.
+            // Logik för att avsluta finns inuti loopen.
             while(true)
             {
                 Console.Clear();
@@ -99,15 +100,33 @@ namespace Calculator2
             // Kontrollera om inmatningen innebär att användaren vill avsluta programmet?
             CheckIfExitProgram(input);
             double number;
+            // För att vara på säkra sidan är maxlängden på talen som kan anges satt till 14 tecken.
+            // Med datatypen double är precisionen inte superbra men jag bedömer att det får räcka
+            // för den här enkla applikationen.
+            // Datatypen double ska hantera ~15-17 siffror. 
+            const int MaxLength = 14;
+            bool tooLong = false;
+            
+            // Kontrollera om längden på inmatning är längre än antalet tillåtna tecken
+            if (input.Length > MaxLength) tooLong = true;
+
             // Försök att omvandla textsträngen till ett nummer.
             // Be annars användaren att fylla i ett nummer
-            while (!double.TryParse(input, out number))
-            {
+            while (!double.TryParse(input, out number) || tooLong)
+            {                
                 Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine("Du måste ange en siffra");
+                if (tooLong) 
+                {
+                    Console.WriteLine("Ange ett mindre tal");
+                } else
+                {
+                    Console.WriteLine("Du måste ange en siffra.");
+                }
                 Console.ForegroundColor = ConsoleColor.White;
                 Console.Write("#: ");
                 input = Console.ReadLine().Trim();
+                // Kontrollera återigen om inmatningen är för lång.
+                if (input.Length <= MaxLength) tooLong = false;
                 CheckIfExitProgram(input);
             }
             return number;
@@ -145,17 +164,20 @@ namespace Calculator2
         {
             // Giltiga parametrar för att avsluta programmet
             string[] exitParams = { "q", "quit" };
+            const string ExitName = "MARCUS";
 
             if (exitParams.Contains(input))
             {
                 Console.WriteLine();
                 Console.WriteLine("Programmet avslutades");
+                Thread.Sleep(2000);
                 Environment.Exit(0);
             // Om det går att avsluta genom att skriva ett namn kontrolleras om kriterierna för det är uppfyllda
-            } else if(input == "MARCUS" && exitByName)
+            } else if(input == ExitName && exitByName)
             {
                 Console.WriteLine();
                 Console.WriteLine("Hej!");
+                Thread.Sleep(2000);
                 Environment.Exit(0);
             }
         }
@@ -179,22 +201,23 @@ namespace Calculator2
         {
             Console.ForegroundColor = ConsoleColor.Blue;
             Console.WriteLine("Tidigare uträkningar: ");
-            // Här går det att använda en foreach-loop också, det blir snyggare men 
-            // eftersom vi pratat mycket om for-loopar i kursen har jag utgått från en sådan.
+            // Här går det att använda en foreach-loop också (eller på något annat sätt också såkalrt).
+            // Generellt tycker jag att läsbarheten är högre med foreach men eftersom
+            // vi pratat mycket om for-loopar i kursen har jag utgått från en sådan här.
             for (int i = 0; i < operations.Count; i++)
             {
                 if (operations[i].MathOperator == "/" && operations[i].Number2 == 0)
                 {
                     // Om användaren försökt dela med noll har ingen uträkning utförts.
                     // Då visas ett felmeddelande...
-                    Console.WriteLine("Det går inte att dela med noll!");
+                    Console.WriteLine(" Det går inte att dela med noll!");
                 }
                 else
                 {
                     // ... annars visas uträkningn
                     // Parametern view avgör hur mycket information som ska visas                 
                     if(view =="all") Console.WriteLine($" {operations[i].Number1} {operations[i].MathOperator} {operations[i].Number2} = {operations[i].Result}");
-                    if(view =="results") Console.WriteLine($"{operations[i].Result}");
+                    if(view =="results") Console.WriteLine($" {operations[i].Result}");
                 }
 
             }
