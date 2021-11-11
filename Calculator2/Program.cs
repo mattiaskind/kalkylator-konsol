@@ -8,12 +8,10 @@ namespace Calculator2
      * Programmet bygger på en while loop som frågar efter inmatning och gör uträkningar till
      * dess att användaren väljer att avsluta. Jag har skapat en klass som genom sina egenskaper representerar 
      * en uträkning. Jag sparar sedan varje uträkning i en lista så att historik kan visas.
-     * Jag har också skapat en statisk klass med metoder för uträkningarna och en del separata metoder
-     * för att undvika skriva samma kod på flera ställen.
+     * Jag har också skapat en statisk klass med metoder för uträkningarna och en klass som hanterar inmatning
+     * och utmatning. Jag har försökt utfgå från DRY-principen och undvika att skriva samma kod på flera ställen.
      * 
-     * Allt ligger i den här filen för att det ska vara enkelt att lämna in men så vitt jag förstår
-     * är det att föredra om respektive klass ligger i en egen fil. Här har jag alltså allt i samma fil för
-     * att det ska vara enkelt - dessutom är programmet så pass simpelt.
+     * Allt ligger i den här filen för att det ska vara enkelt att lämna in, även de separata klasserna.
      * ********************************************************************* */
 
     class Program
@@ -21,14 +19,18 @@ namespace Calculator2
         static void Main(string[] args)
         {
             /* *************************************************************************
-             * Jag sparar alla uträkningar i en lista av objekt som sedan kan användas för att
-             * visa historiken. Jag har funderat på olika alternativ men behöver något som kan öka
-             * i storlek under tiden programmet körs varför en lista passar bra.             
+             * Jag sparar alla uträkningar i en lista med objekt som sedan kan användas för att
+             * visa historiken. Eftersom antalet uträkningar beror på användaren och inte är bestämt på förhand
+             * har jag valt att använda en lista. Jag har funderat på andra alternativ för att spara uträkningarna. 
+             * Jag skulle exempelvis kunna använda array och förstora men en lista lämpar sig väl för ändamålet.             
              * ************************************************************************* */
+            
             List<MathOperation> operations = new List<MathOperation>();
             string input;
             
             bool firstIteration = true;
+            // Den här loopen kommer att köras så länge användaren inte väljer att avsluta vilket
+            // hanteras av logik inuti loopen.
             while(true)
             {
                 Console.Clear();
@@ -39,21 +41,26 @@ namespace Calculator2
                     firstIteration = false;
                 }
 
-                // Om det finns tidigare uträkningar ska dessa visas
-                // Andra argumentet anger hur mycket av historiken som ska visas.
-                // För att visa hela historiken anges all, för endast summeringar: results
-                if (operations.Count > 0) HandleIO.DisplayOperations(operations, "all");
+                /* *
+                 * Om det finns tidigare uträkningar ska dessa visas                  
+                 * Metodens andra agrument anger hur mycket av historiken som ska visas.
+                 * För hela uträkningar = all
+                 * För endast summeringar = results
+                 * */
+                if (operations.Count > 0) HandleIO.DisplayOperations(operations, view: "all");
 
-                // Varje uträkning sparar som ett objekt                
-                // Jag skulle kunna spara termerna, operatorn och summan i variabler för att sedan
-                // lagra på lämpligt sätt men jag har valt utgå från klassen och skapa ett nytt objekt
-                // vid varje iteration. Fördelen är att det är enkelt att hantera, jag vet var jag 
-                // har alla komponenter av uträkningen. Jag kommer ändå att behöva spara dessa i ett objekt
-                // när jag ska lagra uträkningen i en lista                              
+                /*
+                 * Varje uträkning sparas som en instans av klassen MathOperation vilken representerar
+                 * en uträknings alla delar. 
+                 * Ett alternativ skulle vara att spara alla delar av uträkningen i variabler
+                 * men jag har valt att utgå från ett objekt eftersom jag tycker det är smidigt att ha alla delar
+                 * av uträkningen samlade på ett ställe och för att jag kommer att lagra delarna som ett objekt 
+                 * i en lista senare.
+                 */                
                 MathOperation operation = new MathOperation();
 
                 // Visa prompt och inmatning för första termen eller motsvarande
-                // Lagra det första termen i objektet för uträkningen
+                // Lagra den första termen i objektet för uträkningen
                 Console.Write("#: ");
                 input = Console.ReadLine().Trim();
                 operation.Number1 = HandleIO.GetNumber(input);
@@ -65,7 +72,7 @@ namespace Calculator2
                 operation.MathOperator = HandleIO.GetOperator(input);
 
                 // Visa prompt och inmatning för den andra termen
-                // Lagra numret i objektet för uträkningen
+                // Lagra den andra termen i objektet för uträkningen
                 Console.Write("#: ");
                 input = Console.ReadLine().Trim();
                 operation.Number2 = HandleIO.GetNumber(input);
@@ -79,14 +86,16 @@ namespace Calculator2
         }      
     }
 
-    // En klass med statiska metoder för input och output
+    /******************************************************************
+     * En statisk klass med metoder för att hantera in- och utmatning
+     *****************************************************************/    
     public static class HandleIO
     {
         // Metoden kontrollerar att användaren skriver in ett nummer för att sedan returnera det
         public static double GetNumber(string input)
         {
             // Kontrollera om inmatningen innebär att användaren vill avsluta programmet?
-            CheckExitProgram(input);
+            CheckIfExitProgram(input);
             double number;
             // Försök att omvandla textsträngen till ett nummer.
             // Be annars användaren att fylla i ett nummer
@@ -97,15 +106,18 @@ namespace Calculator2
                 Console.ForegroundColor = ConsoleColor.White;
                 Console.Write("#: ");
                 input = Console.ReadLine().Trim();
-                CheckExitProgram(input);
+                CheckIfExitProgram(input);
             }
             return number;
         }
         // Metoden kontrollerar att användaren skriver in en giltig matematisk operator och returnerar den
+        // Jag har valt att utgå från datatypen string även om operatorerna skulle kunna lagras som char
+        // Med string är det enklare att hantera inmatning/utmatning och jag slipper konvertera string till
+        // char i vissa lägen.
         public static string GetOperator(string input)
         {
             // Kontrollera om inputen innebär att användaren vill avsluta programmet?
-            CheckExitProgram(input, exitByName: true);
+            CheckIfExitProgram(input, exitByName: true);
             // Giltiga operatorer
             string[] validOperators = { "+", "-", "/", "*" };            
             // Kontrollera om inmatningen från användaren stämmer med en giltig operator
@@ -117,7 +129,7 @@ namespace Calculator2
                 Console.Write(": ");
                 input = Console.ReadLine().Trim();
                 // Kontrollera om användaren vill avsluta programmet
-                CheckExitProgram(input, exitByName: true);
+                CheckIfExitProgram(input, exitByName: true);
             }
             return input;
         }
@@ -125,7 +137,7 @@ namespace Calculator2
         // Metod för att kontrollera om användaren vill avsluta programmet
         // Den första paremetern är inmatningen från användaren
         // Den andra parametern avgör om det går att avsluta programmet genom att mata in ett namn i stället
-        private static void CheckExitProgram(string input, bool exitByName = false)
+        private static void CheckIfExitProgram(string input, bool exitByName = false)
         {
             // Giltiga parametrar för att avsluta programmet
             string[] exitParams = { "q", "quit" };
@@ -157,34 +169,44 @@ namespace Calculator2
             Console.WriteLine("-----------------------------------------------------\n");            
             Console.ForegroundColor = ConsoleColor.White;
         }
+
         // Metoden skriver ut tidigare uträkningar
         public static void DisplayOperations(List<MathOperation> operations, string view)
         {
             Console.ForegroundColor = ConsoleColor.Blue;
             Console.WriteLine("Tidigare uträkningar: ");
-            foreach (MathOperation listItem in operations)
-            {   // Om användaren försökt dela med noll har ingen uträkning utförts.
-                // Då visas ett felmeddelande, annars visas uträkningen
-                if (listItem.MathOperator == "/" && listItem.Number2 == 0)
+            // Här går det att använda en foreach-loop också, det blir snyggare men 
+            // eftersom vi pratat mycket om for-loopar i kursen har jag utgått från en sådan.
+            for (int i = 0; i < operations.Count; i++)
+            {
+                if (operations[i].MathOperator == "/" && operations[i].Number2 == 0)
                 {
+                    // Om användaren försökt dela med noll har ingen uträkning utförts.
+                    // Då visas ett felmeddelande, annars visas uträkningen
                     Console.WriteLine("Det går inte att dela med noll!");
                 }
                 else
-                {   // Parametern view avgör hur mycket information som ska visas                 
-                    if(view =="all") Console.WriteLine($" {listItem.Number1} {listItem.MathOperator} {listItem.Number2} = {listItem.Result}");
-                    if(view =="results") Console.WriteLine($"{listItem.Result}");
+                {
+                    // Parametern view avgör hur mycket information som ska visas                 
+                    if(view =="all") Console.WriteLine($" {operations[i].Number1} {operations[i].MathOperator} {operations[i].Number2} = {operations[i].Result}");
+                    if(view =="results") Console.WriteLine($"{operations[i].Result}");
                 }
-            }Console.WriteLine("-----------------------------------------------------");
+
+            }
+            Console.WriteLine("-----------------------------------------------------");
             Console.ForegroundColor = ConsoleColor.White;
         }        
     }
 
-    /* *************************************************************************
-     * Jag har valt att skapa en klass för att lagra alla delar av en uträkning
-     * Jag har sneglat lite på struct, tuples och dictionary men tycker att en klass löser
-     * problemet på ett enkelt sätt eftersom det håller ihop de delar som hör samman och 
-     * gör det möjligt att lagra de olika datatyperna double/string i ett och samma objekt
-     * **************************************************************************/
+    /******************************************************************
+    * En klass som innehåller egenskaper motsvarande en uträkning
+    * 
+    * Jag har valt att skapa en klass för att lagra alla delar av en uträkning
+    * Jag har sneglat lite på struct, tuples och dictionary men tycker att en klass löser
+    * problemet på ett enkelt sätt eftersom det håller ihop de delar som hör samman och 
+    * gör det möjligt att lagra de olika datatyperna double/string i ett och samma objekt
+    * på ett smidigt sätt.
+    *****************************************************************/    
     public class MathOperation
     {        
         public double Number1 { get; set; }
@@ -193,7 +215,15 @@ namespace Calculator2
         public double Result { get; set; }
     }
 
-    // En statisk klass med metoder som genomför uträkningar
+    /******************************************************************
+    * En statisk klass med metoder som genomför uträkningar
+    * Jag har valt att skapa en separat klass för att utföra uträkningarna. Dessa metoder skulle
+    * kunna ingå i klassen MathOperation men jag har valt att ha dem i en statisk klass istället
+    * eftersom det inte behövs flera instanser. Jag hanterar bara en uträkning
+    * i taget och därför passar det bra att ha dessa metoder statiska. Det gör också att klassen
+    * kan återanvändas lättare i andra sammanhang. Den är inte bunden till de specifika egenskaperna
+    * som hör till en uträkning i just det här programmet.
+    *******************************************************************/
     public static class Calculator
     {
         // Metoden hanterar alla uträkningar och anropar rätt metod baserat på angiven operator
