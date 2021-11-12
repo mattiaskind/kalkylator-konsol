@@ -14,7 +14,7 @@ namespace Calculator2
      * att skriva samma kod flera gånger. Det gör det enklare om något behöver ändras.
      * 
      * Allt ligger i den här filen, även de separata klasserna. Jag är medveten om att varje klass egentligen bör ligga
-     * i en egen fil men jag har allt i samma för att det ska vara enkelt att lämna in.
+     * i en egen fil men jag har allt i samma den här gången för att det ska vara enkelt att lämna in.
      * ********************************************************************* */
 
     class Program
@@ -57,7 +57,7 @@ namespace Calculator2
                  * 
                  * Ett alternativ till den här lösningen skulle kunna vara att spara alla delar av uträkningen i variabler
                  * men jag har valt att utgå från ett objekt eftersom jag tycker det är smidigt att ha alla delar
-                 * av uträkningen samlade på ett ställe. Dessutom kommer jag att lagra delarna som ett objekt 
+                 * av uträkningen samlade på ett ställe. Dessutom kommer jag att lagra informationen i ett objekt 
                  * i en lista senare.
                  */
                 MathOperation operation = new MathOperation();
@@ -97,37 +97,43 @@ namespace Calculator2
         // Metoden kontrollerar att användaren skriver in ett nummer för att sedan returnera det
         public static double GetNumber(string input)
         {
-            // Kontrollera om inmatningen innebär att användaren vill avsluta programmet?
-            CheckIfExitProgram(input);
-            double number;
+            // Kontrollera om inmatningen innebär att användaren vill avsluta programmet
+            CheckIfExitProgram(input);           
+            
             // För att vara på säkra sidan är maxlängden på talen som kan anges satt till 14 tecken.
-            // Med datatypen double är precisionen inte superbra men jag bedömer att det får räcka
-            // för den här enkla applikationen.
-            // Datatypen double ska hantera ~15-17 siffror. 
+            // Med datatypen double är precisionen kanske inte tillräcklig för en riktig miniräknare
+            // men jag bedömer att det får räcka för den här enkla applikationen.
+            // Datatypen double ska kunna hantera ~15-17 siffror. 
             const int MaxLength = 14;
             bool tooLong = false;
-            
+            double number;
+
             // Kontrollera om längden på inmatning är längre än antalet tillåtna tecken
             if (input.Length > MaxLength) tooLong = true;
 
-            // Försök att omvandla textsträngen till ett nummer.
+            // Försök att omvandla textsträngen till ett nummer. 
             // Be annars användaren att fylla i ett nummer
-            while (!double.TryParse(input, out number) || tooLong)
+            bool validNumber = double.TryParse(input, out number);            
+            while (!validNumber || tooLong)
             {                
                 Console.ForegroundColor = ConsoleColor.Red;
-                if (tooLong) 
+                if (!validNumber)
+                {
+                    Console.WriteLine("Du måste ange en siffra.");                    
+                }
+                else
                 {
                     Console.WriteLine("Ange ett mindre tal");
-                } else
-                {
-                    Console.WriteLine("Du måste ange en siffra.");
                 }
                 Console.ForegroundColor = ConsoleColor.White;
                 Console.Write("#: ");
                 input = Console.ReadLine().Trim();
-                // Kontrollera återigen om inmatningen är för lång.
-                if (input.Length <= MaxLength) tooLong = false;
+                // Kontrollera återigen om användaren vill avsluta programmet
                 CheckIfExitProgram(input);
+                // Försök omvandla inmatningen till ett nummer
+                validNumber = double.TryParse(input, out number);
+                // Kontrollera återigen om inmatningen är för lång.                
+                if (input.Length > MaxLength) tooLong = true; else tooLong = false;
             }
             return number;
         }
@@ -135,8 +141,8 @@ namespace Calculator2
         // Metoden kontrollerar att användaren skriver in en giltig matematisk operator och returnerar den
         // Jag har valt att utgå från datatypen string även om operatorerna skulle kunna lagras som char
         // Med string är det enklare att hantera inmatning/utmatning då jag slipper konvertera string till
-        // char i vissa lägen. Char är antagligen effektivare men jag tror att string fungerar lika bra här
-        // i en så pass simpel applikation.
+        // char i vissa lägen. Char är antagligen effektivare men string borde fungera lika bra 
+        // i en så här simpel applikation.
         public static string GetOperator(string input)
         {
             // Kontrollera om inputen innebär att användaren vill avsluta programmet
