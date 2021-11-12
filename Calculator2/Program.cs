@@ -11,10 +11,11 @@ namespace Calculator2
      * en uträkning. Jag sparar sedan varje uträkning i en lista så att historik kan visas.
      * Jag har också skapat en statisk klass med metoder för uträkningarna och en klass som hanterar inmatning
      * och utmatning. Jag har försökt utfgå från DRY-principen så gott jag kunnat för att undvika 
-     * att skriva samma kod flera gånger. Det gör det enklare om något behöver ändras.
+     * att skriva samma kod flera gånger. Det gör det enklare om något behöver ändras och därför har jag en del
+     * fristående metoder.
      * 
-     * Allt ligger i den här filen, även de separata klasserna. Jag är medveten om att varje klass egentligen bör ligga
-     * i en egen fil men jag har allt i samma den här gången för att det ska vara enkelt att lämna in.
+     * Allt ligger i den här filen, även de separata klasserna. Jag är medveten om att varje klass egentligen bör finnas
+     * i en egen fil men jag har allt i samma den här gången för att det ska vara enkelt att lämna in uppgiften.
      * ********************************************************************* */
 
     class Program
@@ -55,10 +56,10 @@ namespace Calculator2
                  * Varje uträkning sparas som en instans av klassen MathOperation vilken representerar
                  * en uträknings alla delar. 
                  * 
-                 * Ett alternativ till den här lösningen skulle kunna vara att spara alla delar av uträkningen i variabler
-                 * men jag har valt att utgå från ett objekt eftersom jag tycker det är smidigt att ha alla delar
-                 * av uträkningen samlade på ett ställe. Dessutom kommer jag att lagra informationen i ett objekt 
-                 * i en lista senare.
+                 * Ett alternativ till den här lösningen skulle kunna vara att spara alla delar av uträkningen i separata 
+                 * variabler som definieras i main-metoden men jag har valt att utgå från ett objekt eftersom jag tycker 
+                 * det är smidigt att ha alla delar av uträkningen samlade på ett ställe. 
+                 * Dessutom kommer jag att lagra informationen i ett objekt i en lista senare.
                  */
                 MathOperation operation = new MathOperation();
 
@@ -100,10 +101,14 @@ namespace Calculator2
             // Kontrollera om inmatningen innebär att användaren vill avsluta programmet
             CheckIfExitProgram(input);           
             
-            // För att vara på säkra sidan är maxlängden på talen som kan anges satt till 14 tecken.
-            // Med datatypen double är precisionen kanske inte tillräcklig för en riktig miniräknare
-            // men jag bedömer att det får räcka för den här enkla applikationen.
-            // Datatypen double ska kunna hantera ~15-17 siffror. 
+            /* För att minska risken att användaren knappar in för stora tal är maxlängden på inmatningen
+            * satt till 14 tecken. Med datatypen double är precisionen kanske inte tillräcklig för en riktig miniräknare
+            * men jag bedömer att det får räcka för den här applikationen. Datatypen double ska kunna hantera ~15-17 siffror.
+            *
+            * Det här fungerar för de flesta "vanliga" uträkningarna men talen kan ändå bli för stora om användaren exempelvis
+            * multiplicerar med stora tal. Jag har tittat lite på Microsofts OverflowException-klass men jag har inte hunnit
+            * implementera något som fungerar fullt ut för att helt eliminera risken.
+            */
             const int MaxLength = 14;
             bool tooLong = false;
             double number;
@@ -133,16 +138,18 @@ namespace Calculator2
                 // Försök omvandla inmatningen till ett nummer
                 validNumber = double.TryParse(input, out number);
                 // Kontrollera återigen om inmatningen är för lång.                
-                if (input.Length > MaxLength) tooLong = true; else tooLong = false;
+                tooLong = (input.Length > MaxLength);
             }
             return number;
         }
 
-        // Metoden kontrollerar att användaren skriver in en giltig matematisk operator och returnerar den
-        // Jag har valt att utgå från datatypen string även om operatorerna skulle kunna lagras som char
-        // Med string är det enklare att hantera inmatning/utmatning då jag slipper konvertera string till
-        // char i vissa lägen. Char är antagligen effektivare men string borde fungera lika bra 
-        // i en så här simpel applikation.
+        /* 
+        * Metoden kontrollerar att användaren skriver in en giltig matematisk operator och returnerar den
+        * Jag har valt att utgå från datatypen string även om operatorerna skulle kunna lagras som char
+        * Med string är det enklare att hantera inmatning/utmatning då jag slipper konvertera string till
+        * char i vissa lägen. Char är antagligen effektivare men string borde fungera lika bra 
+        * i en så här simpel applikation.
+        */
         public static string GetOperator(string input)
         {
             // Kontrollera om inputen innebär att användaren vill avsluta programmet
@@ -195,8 +202,9 @@ namespace Calculator2
             Console.WriteLine("########## MINIRÄKNARE ##########\n");
             Console.WriteLine(
                 "INSTRUKTIONER:\n" +
-                " - Skriv ett tal, sedan +, -, / eller *\n" +
-                " - Mata in ytterligare ett tal\n" +
+                " 1. Mata in ett tal,\n" +
+                " 2. Mata in en operator (+, -, / eller *)\n" +
+                " 3. Mata in ytterligare ett tal\n" +
                 " - Tryck enter efter varje val\n" +
                 " - Skriv q eller quit för att avsluta\n");
             Console.WriteLine("-----------------------------------------------------\n");            
@@ -208,9 +216,9 @@ namespace Calculator2
         {
             Console.ForegroundColor = ConsoleColor.Blue;
             Console.WriteLine("Tidigare uträkningar: ");
-            // Här går det att använda en foreach-loop också (eller något annat för den delen)
-            // Generellt tycker jag att läsbarheten är högre med foreach men eftersom
-            // vi pratat mycket om for-loopar i kursen har jag utgått från en sådan här.
+            // Här går det att använda en foreach-loop också (eller något annat så som while eller do/while)
+            // Generellt tycker jag att läsbarheten är högre med foreach. Eftersom
+            // vi pratat mycket om for-loopar i kursen har jag ändå utgått från en sådan här.
             for (int i = 0; i < operations.Count; i++)
             {
                 if (operations[i].MathOperator == "/" && operations[i].Number2 == 0)
@@ -246,7 +254,7 @@ namespace Calculator2
     * lagra resultatet. Det räknas ut i samband med att termer och operator matas in
     * men skulle också kunna räknas ut och visas i samband med att jag skriver ut historiken. 
     * Jag har dock valt att spara alla delar så här vilket gör det möjligt att, när som helst, 
-    * ha tillgång till resultatet av en uträkning utan att behöva utföra den flera gånger.
+    * få tillgång till resultatet av en uträkning utan att behöva utföra den flera gånger.
     *****************************************************************/    
     public class MathOperation
     {        
@@ -261,12 +269,19 @@ namespace Calculator2
     * Jag har valt att skapa en separat klass för att utföra uträkningarna. Dessa metoder skulle
     * kunna ingå i klassen MathOperation men jag har valt att lägga dem separat.
     * Jag hanterar bara en uträkning i taget och därför passar det bra att ha dessa metoder statiska. 
-    * Det gör också att klassen kan återanvändas lättare i andra sammanhang. Den är inte bunden till 
-    * de specifika egenskaperna som hör till en uträkning i just det här programmet.
+    * Att hålla metoderna i en separat klass gör också att de kan återanvändas lättare i andra sammanhang. 
+    * Funktionaliteten är inte bunden till de specifika egenskaperna som hör till en uträkning i just det här programmet.
     *******************************************************************/
     public static class Calculator
     {
-        // Metoden hanterar alla uträkningar och anropar rätt metod baserat på angiven operator
+        /******************************************************************
+        * Metoden hanterar alla uträkningar och anropar rätt metod baserat på angiven operator
+        * På så sätt räcker det med att man anropar en metod för att utföra en uträkning,
+        * så långe operatorn är korrekt kommer sedan klassen att hantera
+        * vilken typ av uträkning som ska genomföras. Metoderna är privata vilket innebär att 
+        * den som ska använda klassen inte kan/behöver anropa mer än en metod.
+        *******************************************************************/
+
         public static double DoOperation(double number1, double number2, string op)
         {            
             double result = 0;
